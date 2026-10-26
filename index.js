@@ -19,7 +19,9 @@ export async function connectToMongoDB() {
   }
 }
 
-await connectToMongoDB();
+const connectClient = await connectToMongoDB();
+const db = connectClient.db('simpleCrudDB')
+const users = db.collection('users');
 
 app.use(cors());
 app.use(express.json());
@@ -28,6 +30,18 @@ app.get('/', (req, res) =>{
     res.send('Hello world');
 })
 
+app.get('/users', async(req, res) =>{
+    const cursor = users.find({});
+    const allUsers = await cursor.toArray();
+    res.send(allUsers);
+})
+
+
+app.post('/users', async(req, res) => {
+    const newUser = req.body;
+    const result = await users.insertOne(newUser);
+    res.send(result);
+})
 
 app.listen(port, ()=>{
     console.log(`web server listening on port ${port}`);
