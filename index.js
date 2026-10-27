@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config' 
 
 const app = express()
@@ -37,9 +37,44 @@ app.get('/users', async(req, res) =>{
 })
 
 
+app.get('/user/:id', async(req, res) => {
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)};
+    const result = await users.findOne(query);
+    res.send(result); 
+})
+
+
 app.post('/users', async(req, res) => {
     const newUser = req.body;
     const result = await users.insertOne(newUser);
+    res.send(result);
+})
+
+
+app.patch('/user/:id', async(req, res) => {
+    const id = req.params.id;
+    const updateUser = req.body;
+
+    const query = {_id: new ObjectId(id)};
+    const options = { upsert: true };
+
+    const update = {
+        $set:{
+            name: updateUser.name,
+            email: updateUser.email
+        }
+    };
+
+    const result = await users.updateOne(query, update, options);
+
+    res.send(result);
+})
+
+app.delete('/user/:id', async(req, res) =>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)};
+    const result = await users.deleteOne(query);
     res.send(result);
 })
 
